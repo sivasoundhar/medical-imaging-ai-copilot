@@ -101,16 +101,45 @@ See `src/safety/`.
 ## Architecture
 
 ```
-React frontend (Vite + TS + Tailwind)
-        │  /api/v1/*
-        ▼
-FastAPI backend
- ├─ imaging:  2D ResNet50 (X-ray) + 3D CNN (CT candidate classification)
- ├─ explain:  Grad-CAM (2D only — see docs/MODEL_CARD.md)
- ├─ llm:      provider-agnostic gateway (Groq / Ollama / Claude / mock)
- ├─ safety:   groundedness + output-safety validation on every LLM response
- └─ storage:  SQLite (report history) + generated PDF reports
+┌────────────────────────────────────────────────────────────────────────┐
+│ React frontend  (Vite + TypeScript + Tailwind)                         │
+│ Dashboard · New Study (X-ray/CT upload) · Reports History · All        │
+│ Studies · Analytics · AI Copilot Chat · Settings                       │
+└────────────────────────────────────────────────────────────────────────┘
+                          │   REST — /api/v1/*  (src/main.py)
+                          ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ Services  (src/services/)                                              │
+│ imaging_service · copilot_service · report_service                     │
+│ — orchestration only; callers never touch model/LLM internals directly │
+└────────────────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ Vision   (src/vision/)                                                 │
+│   ResNet50 (2D X-ray) · 3D CNN (CT candidate patches)                  │
+│   Grad-CAM explainability (2D) · CT slice preview / coordinate mapping │
+│                                                                        │
+│ LLM Copilot + Safety   (src/llm/ + src/safety/)                        │
+│   gateway.py routes to groq · ollama · claude · mock                   │
+│   grounded ONLY on the vision model's structured findings —            │
+│   never sees the raw image. groundedness.py + output_guard.py          │
+│   validate every response before it reaches a user; falls back         │
+│   to a 2nd provider on failure                                         │
+│                                                                        │
+│ Storage   (storage/)                                                   │
+│   SQLAlchemy models + repositories (SQLite). report_service            │
+│   renders and persists PDF reports (ReportLab)                         │
+└────────────────────────────────────────────────────────────────────────┘
 ```
+
+**Request flow, end to end:** an image (or CT candidate coordinate) is
+uploaded → the vision model classifies it and Grad-CAM/CT-preview
+renders an explanation image → those structured findings (never the raw
+image) are handed to the LLM gateway → the safety pipeline validates the
+response for groundedness and safety before it reaches the frontend →
+the user can save the result and generate a PDF report, which is
+persisted to SQLite and downloadable from Reports History.
 
 ## Tech stack
 
@@ -170,21 +199,52 @@ real data.
 ## Project structure
 
 ```
-src/                    FastAPI app, vision models, LLM gateway, safety pipeline
-  preprocessing/         2D/3D image loading & normalization
-  vision/                model definitions, inference, Grad-CAM, CT preview
-  llm/                   provider gateway (Groq/Ollama/Claude/mock), prompts, KB
-  safety/                groundedness, output guard, input guard
-  services/              orchestration layer (imaging, copilot, report)
-  schemas/                Pydantic request/response models
-storage/                 SQLAlchemy models + repositories (report history DB)
-training/                training scripts (train_2d.py, train_3d.py)
-configs/                 training configuration (YAML)
-evaluation/              real evaluation scripts + results (2D/3D metrics, safety eval)
-knowledge_base/          deterministic medical reference content for the LLM
-frontend/                React + TypeScript + Vite app
-tests/                   pytest suite (mocked/CI-safe + real-data integration tests)
-docs/MODEL_CARD.md       real, measured model metrics & limitations
+src/                          FastAPI app
+├── main.py                    app entrypoint, all /api/v1 routes
+├── config.py                  Pydantic Settings (env-driven config)
+├── preprocessing/
+│   ├── preprocess_2d.py        X-ray load/resize/normalize
+│   └── preprocess_3d.py        CT volume load/resample/normalize
+├── vision/
+│   ├── model_2d.py             ResNet50 (2D) definition
+│   ├── model_3d.py             3D CNN definition
+│   ├── inference.py            unified analyze_xray / analyze_ct
+│   ├── gradcam.py               2D Grad-CAM
+│   ├── ct_preview.py           CT slice render + coordinate mapping
+│   └── dataset_2d.py / dataset_3d.py   training-time datasets
+├── llm/
+│   ├── gateway.py               provider-agnostic factory + fallback
+│   ├── groq_provider.py / ollama_provider.py / claude_provider.py / mock_provider.py
+│   ├── prompts.py               structured-output prompt templates
+│   └── knowledge_base.py       deterministic keyword-lookup KB retrieval
+├── safety/
+│   ├── groundedness.py          rejects ungrounded LLM claims
+│   ├── output_guard.py          rejects unsafe LLM output
+│   └── input_guard.py           input validation + prompt-injection heuristics
+├── services/
+│   ├── imaging_service.py       orchestrates vision + Grad-CAM/preview
+│   ├── copilot_service.py       orchestrates LLM + safety pipeline
+│   └── report_service.py        orchestrates PDF generation + persistence
+└── schemas/                    Pydantic request/response models (api, imaging, llm)
+
+storage/                       SQLAlchemy models + repositories (report history DB)
+training/                      train_2d.py, train_3d.py — real training scripts
+configs/                       train_2d.yaml, train_3d.yaml — training configuration
+evaluation/                    real evaluation scripts + results (2D/3D metrics, safety eval)
+knowledge_base/                deterministic medical reference content for the LLM
+docs/MODEL_CARD.md             real, measured model metrics & limitations
+
+frontend/src/                 React + TypeScript + Vite app
+├── pages/                     Dashboard, NewStudy, AllStudies, Analytics,
+│                               ReportsHistory, ReportView, CopilotChat, Settings
+├── components/                AnalysisResult, CompareSlider, CopilotPanel,
+│                               CtUploadAndPicker, XrayUpload, PatientForm, …
+├── api/                       client.ts (fetch wrapper), types.ts
+└── lib/                       theme.ts (light/dark)
+
+tests/                         pytest suite — mocked/CI-safe unit + API tests,
+                                plus real-data integration tests that self-skip
+                                when checkpoints/data aren't present
 ```
 
 ---
