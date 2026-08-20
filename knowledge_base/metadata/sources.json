@@ -1,0 +1,29 @@
+[
+  {
+    "source_id": "kb-pneumonia-001",
+    "title": "Pneumonia — General Educational Reference",
+    "file": "pneumonia_reference.md",
+    "version": "1.0",
+    "topic": "pneumonia",
+    "status": "approved",
+    "citation": "General medical-education reference material, written for this project. Not sourced from a specific named clinical guideline — do not present as citing one."
+  },
+  {
+    "source_id": "kb-pulmonary-nodule-001",
+    "title": "Pulmonary Nodules — General Educational Reference",
+    "file": "pulmonary_nodule.md",
+    "version": "1.0",
+    "topic": "nodule",
+    "status": "approved",
+    "citation": "General medical-education reference material, written for this project. Not sourced from a specific named clinical guideline — do not present as citing one."
+  },
+  {
+    "source_id": "kb-imaging-terms-001",
+    "title": "Reading AI Imaging Output — Terms and Limitations",
+    "file": "imaging_terms.md",
+    "version": "1.0",
+    "topic": "imaging terms, model probability, confidence, grad-cam",
+    "status": "approved",
+    "citation": "Project-authored explainer, not a clinical source — describes how to interpret this system's own output, not medical fact."
+  }
+]

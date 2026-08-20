@@ -1,0 +1,35 @@
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Gotcha, real and easy to hit: if LLM_PROVIDER=ollama and Ollama
+      # runs on the host machine (not in this compose file), "localhost"
+      # from inside this container means the container itself, not the
+      # host. Docker Desktop (Windows/Mac) resolves the host via
+      # host.docker.internal -- override OLLAMA_BASE_URL in .env to
+      # http://host.docker.internal:11434 if you hit connection errors.
+      # On Linux Docker Engine, use the host's LAN IP instead (no
+      # host.docker.internal by default).
+      - DATABASE_URL=sqlite:////data/app.db
+    volumes:
+      # Named volume so report history survives `docker compose down` /
+      # container recreation -- not baked into the image (that's the
+      # model checkpoints, which are static; this is real generated
+      # data that should persist).
+      - reports_db:/data
+      - reports_pdfs:/app/reports/generated
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  reports_db:
+  reports_pdfs:

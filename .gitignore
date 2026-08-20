@@ -1,0 +1,50 @@
+# --- Data & model artifacts (large, never commit) ---
+Data/
+models_trained/*.pth
+models_trained/*.pt
+training/checkpoints/*.pth
+training/checkpoints/*.pt
+*.raw
+*.mhd
+
+# --- Generated inference outputs (heatmaps, overlays — regenerable) ---
+outputs/
+
+# --- Day 11: local SQLite DB + generated PDF reports (regenerable, real
+# patient-like demo data only, never commit either) ---
+storage/*.db
+storage/*.db-journal
+reports/generated/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# --- Environment / secrets ---
+.env
+.env.local
+
+# --- Frontend ---
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# --- OS / editor ---
+.DS_Store
+__MACOSX/
+.vscode/
+.idea/
+
+# --- Claude Code local session config (machine-specific, not project source) ---
+.claude/
+
+# --- Logs ---
+*.log

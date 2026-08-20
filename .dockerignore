@@ -1,0 +1,40 @@
+# Keeps the build context small and fast -- mirrors .gitignore's
+# "never needed at build/runtime" list, plus dev-only tooling.
+#
+# Deliberately NOT excluding training/checkpoints/*.pth here (unlike
+# .gitignore) -- the trained model weights are baked into the backend
+# image on purpose, so `docker compose up` is self-contained and doesn't
+# require separately sourcing model files. See Dockerfile's comment.
+Data/
+colab_notebooks/
+colab_upload/
+*.raw
+*.mhd
+
+.git/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+storage/*.db
+storage/*.db-journal
+reports/generated/
+outputs/
+
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+.env
+.env.local
+*.log
+.DS_Store
+__MACOSX/
+.vscode/
+.idea/

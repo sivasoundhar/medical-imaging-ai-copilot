@@ -1,0 +1,46 @@
+# 3D CNN baseline configuration for LUNA16 nodule-candidate classification.
+# Per PROJECT_SPEC.md Day 6 -- engineering defaults, NOT medical-validation
+# requirements. Change based on actual experiments, not guesswork, and
+# record what was actually used for each run.
+
+data:
+  dataset_root: Data/subset0
+  candidates_csv: Data/candidates.csv
+  # Not used as a training-label source (candidates.csv is) -- kept here
+  # for Day 7 localization evaluation only. See dataset_3d.py docstring.
+  annotations_csv: Data/annotations.csv
+  # Fractions of unique subset0 seriesuids, not candidate rows -- mirrors
+  # dataset_2d.yaml's patient-fraction convention.
+  val_fraction: 0.15
+  test_fraction: 0.15
+  split_seed: 42
+  crop_size: [32, 48, 48] # (D, H, W) voxels at 1mm isotropic spacing
+
+model:
+  architecture: nodule_3d_cnn
+  num_classes: 2 # non-nodule, nodule
+
+training:
+  framework: pytorch
+  device: cuda_if_available
+  epochs: 10
+  batch_size: 4 # small default -- 3D volumes are memory-heavy (Day 6 "Important")
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  optimizer: AdamW
+  scheduler: ReduceLROnPlateau
+  early_stopping_patience: 3
+  seed: 42
+  num_workers: 0 # Windows-safe default; raise on Linux/Colab
+  # candidates.csv is severely imbalanced (confirmed ~466:1 non-nodule:nodule
+  # on subset0 -- see PROGRESS_LOG.md Day 6 entry). WeightedRandomSampler
+  # target fraction of nodule-positive samples per batch.
+  balance_positive_fraction: 0.3
+
+evaluation:
+  selection_metric: validation_roc_auc
+  save_best_checkpoint: true
+
+paths:
+  checkpoint_dir: training/checkpoints
+  checkpoint_name: model_3d_best.pth

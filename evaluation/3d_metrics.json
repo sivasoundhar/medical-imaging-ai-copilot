@@ -1,0 +1,18 @@
+{
+  "roc_auc": 0.7770637427537547,
+  "pr_auc": 0.026182248102703545,
+  "sensitivity_recall": 0.6666666666666666,
+  "specificity": 0.7820498856333733,
+  "precision": 0.0029895366218236174,
+  "f1": 0.005952380952380952,
+  "confusion_matrix": {
+    "tn": 7180,
+    "fp": 2001,
+    "fn": 3,
+    "tp": 6
+  },
+  "n_test_candidates": 9190,
+  "decision_threshold": 0.5,
+  "false_positives_per_scan": 153.92307692307693,
+  "n_test_scans": 13
+}

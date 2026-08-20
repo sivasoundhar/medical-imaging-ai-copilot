@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Medical Imaging AI Copilot — design tokens
+   "Radiology Command Center" dark theme is the default (matches the
+   reading-room environment radiologists actually work in — dim light
+   preserves contrast sensitivity on grayscale imaging, a real reason
+   for a dark UI, not just aesthetic preference). Day 12 added a real,
+   working light theme on top of the same tokens (toggled via
+   `data-theme` on <html>, see src/lib/theme.ts) — every existing class
+   (bg-bg, text-ink, border-border, ...) repaints for free since nothing
+   in the app hardcodes a color outside these tokens.
+   ============================================================ */
+@theme {
+  /* Neutrals — deep blue-black, not pure black/grey, so surfaces read
+     as "chosen" rather than a default #000 */
+  --color-bg: #0A0E14;
+  --color-surface: #10161F;
+  --color-surface-2: #161D28;
+  --color-border: #232B38;
+  --color-ink: #E8EDF2;
+  --color-ink-muted: #8A97A8;
+  --color-ink-faint: #59667A;
+
+  /* Primary accent — a clinical monitor-cyan (PACS/DICOM viewer
+     selection-highlight hue), not a generic AI purple/violet gradient */
+  --color-accent: #2FD1D9;
+  --color-accent-ink: #06282A;
+  --color-accent-soft: #12313380;
+
+  /* Semantic (separate from the accent — encodes real finding state,
+     not decoration) */
+  --color-positive: #34D399;
+  --color-positive-soft: #0F2C24;
+  --color-warn: #F0A93A;
+  --color-warn-soft: #2B2013;
+  --color-warn-border: #4A3A1D;
+  --color-danger: #F2545B;
+  --color-danger-soft: #2E1417;
+
+  /* Chart categorical palette (Day 12 Dashboard/Analytics) — validated
+     with the dataviz skill's scripts/validate_palette.js against BOTH
+     this dark surface (#10161F) and the light surface below: lightness
+     band, chroma floor, CVD adjacent-pair separation, and contrast all
+     pass. Fixed order, never cycled/reassigned by a filter. */
+  --color-chart-1: #0090A0;
+  --color-chart-2: #B9791F;
+  --color-chart-3: #1F9A6E;
+  --color-chart-4: #C43A40;
+
+  --font-sans: -apple-system, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "SF Mono", "Consolas", "Liberation Mono", monospace;
+}
+
+/* Light theme — same token names, re-pointed. Explicit opt-in only
+   (`<html data-theme="light">`, set by src/lib/theme.ts) — the default
+   with no attribute set is still the dark reading-room theme above. */
+:root[data-theme='light'] {
+  --color-bg: #F3F5F8;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #EEF1F5;
+  --color-border: #DCE1E9;
+  --color-ink: #10151C;
+  --color-ink-muted: #4B5768;
+  --color-ink-faint: #8592A3;
+
+  --color-accent: #0E8A93;
+  --color-accent-ink: #FFFFFF;
+  --color-accent-soft: #0E8A9326;
+
+  --color-positive: #17915F;
+  --color-positive-soft: #E4F5EC;
+  --color-warn: #B9791F;
+  --color-warn-soft: #FBF1E1;
+  --color-warn-border: #E9CFA0;
+  --color-danger: #C43A40;
+  --color-danger-soft: #FBE7E8;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.font-mono-tabular {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbar — subtle, matches the dark surface rather than the OS default */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-ink-faint); }
+
+@layer components {
+  .input {
+    @apply w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-ink
+      placeholder:text-ink-faint outline-none transition-colors
+      focus:border-accent focus:ring-1 focus:ring-accent;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold
+      text-accent-ink transition-opacity hover:opacity-90 disabled:opacity-40
+      disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-4 py-2.5
+      text-sm font-medium text-ink transition-colors hover:border-accent/50 hover:text-accent
+      disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .card {
+    @apply rounded-xl border border-border bg-surface p-5;
+  }
+}

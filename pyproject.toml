@@ -1,0 +1,11 @@
+[tool.ruff]
+line-length = 110
+
+[tool.ruff.lint]
+# Pyflakes (F) + pycodestyle errors (E) -- catches real bugs (unused
+# imports, undefined names, ambiguous names) without bikeshedding style
+# preferences. Deliberately not the broader default ruleset some local
+# environments pick up via a global config -- kept explicit here so CI
+# and any contributor's machine lint the same rules, not whatever ruff
+# happens to default to locally.
+select = ["E", "F"]

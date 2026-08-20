@@ -1,0 +1,57 @@
+# Day 1 — FastAPI foundation only.
+# Vision (torch, torchvision, pytorch-grad-cam, pydicom, nibabel, SimpleITK)
+# and LLM (groq, ollama, anthropic) deps will be added on the days that need them.
+
+fastapi>=0.115
+uvicorn[standard]>=0.34
+pydantic>=2.10
+pydantic-settings>=2.7
+python-dotenv>=1.0
+# --- Day 8: multipart file uploads (POST /api/v1/imaging/analyze) ---
+python-multipart>=0.0.20
+
+pytest>=8.3
+pytest-asyncio>=1.0
+httpx>=0.28
+ruff>=0.8  # linting (Day 11 CI: see pyproject.toml for the pinned ruleset)
+
+# --- Day 2: medical image preprocessing ---
+pydicom>=3.0
+nibabel>=5.4
+SimpleITK>=2.5
+opencv-python-headless>=5.0
+Pillow>=12.0
+numpy>=2.5
+
+# --- Day 3: 2D model training ---
+# torch/torchvision intentionally NOT pinned here — install the build
+# matching your hardware (CPU-only for local dev/tests, CUDA build for
+# real GPU training). See README for the exact install command used.
+PyYAML>=6.0
+scikit-learn>=1.5
+
+# --- Day 5: Grad-CAM explainability ---
+# PyPI package name is "grad-cam", imported as `pytorch_grad_cam`.
+# Gotcha: it pulls in `opencv-python` (GUI build) as a transitive dep,
+# alongside our intentional `opencv-python-headless` from Day 2 — both
+# currently resolve to the same version (5.0.0.93) so `import cv2` isn't
+# broken, but having both installed is fragile; flagged, not fixed.
+grad-cam>=1.5
+
+# --- Day 9: LLM gateway ---
+# Official SDK for the Claude provider (src/llm/claude_provider.py).
+# Groq/Ollama are called via httpx directly (already a dependency) since
+# both expose plain HTTP APIs -- no SDK needed for either.
+anthropic>=0.122
+
+# --- Day 11: reports history storage + PDF generation ---
+# SQLite via SQLAlchemy's sync engine -- deliberately lightweight (no
+# separate DB server to run/deploy for a portfolio project). Sync calls
+# are dispatched via asyncio.to_thread() from async endpoints rather
+# than adding an async SQLite driver as a second dependency.
+sqlalchemy>=2.0
+# PDF report generation (professional report deliverable, Day 11).
+reportlab>=4.0
+# PDF *reading* -- test-only, to assert real generated PDF content
+# rather than just "a file exists".
+pypdf>=5.0

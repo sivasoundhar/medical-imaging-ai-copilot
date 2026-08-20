@@ -1,0 +1,41 @@
+# 2D ResNet50 baseline configuration.
+# Per PROJECT_SPEC.md Section 45 — engineering defaults, NOT
+# medical-validation requirements. Change based on actual experiments,
+# not guesswork, and record what was actually used for each run.
+
+data:
+  dataset_root: Data/chest_xray
+  # Official train/val/test folders are pooled and re-split by patient
+  # from scratch (official train/test are NOT patient-disjoint in this
+  # dataset — see dataset_2d.py docstring). val_fraction/test_fraction
+  # are fractions of unique patients, not images.
+  val_fraction: 0.15
+  test_fraction: 0.15
+  split_seed: 42
+
+model:
+  architecture: resnet50
+  pretrained: true
+  num_classes: 2 # NORMAL, PNEUMONIA (Kaggle Chest X-ray Pneumonia dataset)
+  freeze_backbone: false
+
+training:
+  framework: pytorch
+  device: cuda_if_available
+  epochs: 10
+  batch_size: 16
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  optimizer: AdamW
+  scheduler: ReduceLROnPlateau
+  early_stopping_patience: 3
+  seed: 42
+  num_workers: 0 # Windows-safe default; raise on Linux/Colab
+
+evaluation:
+  selection_metric: validation_roc_auc
+  save_best_checkpoint: true
+
+paths:
+  checkpoint_dir: training/checkpoints
+  checkpoint_name: model_2d_best.pth
