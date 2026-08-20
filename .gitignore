@@ -46,5 +46,12 @@ __MACOSX/
 # --- Claude Code local session config (machine-specific, not project source) ---
 .claude/
 
+# --- Internal build-process docs (kept locally for continuity, never
+# published — this was a deliberate decision, see PROGRESS_LOG.md) ---
+PROGRESS_LOG.md
+CLAUDE.md
+PROJECT_SPEC.md
+colab_notebooks/
+
 # --- Logs ---
 *.log
