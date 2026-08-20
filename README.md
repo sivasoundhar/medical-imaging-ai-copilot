@@ -261,9 +261,9 @@ tests/                         pytest suite — mocked/CI-safe unit + API tests,
 ### 1. Get the checkpoints and (optionally) the data
 
 Trained checkpoints are gitignored (large binaries — not committed to
-this repo's git history) but downloadable from this repo's
-**[Releases page](../../releases)**: grab `model_2d_best.pth` and
-`model_3d_best.pth` and place them at
+this repo's git history) but downloadable from
+**[Release v1.0.0](https://github.com/sivasoundhar/medical-imaging-ai-copilot/releases/tag/v1.0.0)**:
+grab `model_2d_best.pth` and `model_3d_best.pth` and place them at
 `training/checkpoints/model_2d_best.pth` and
 `training/checkpoints/model_3d_best.pth`. The backend starts fine
 without them too — `/imaging/analyze` correctly returns a **503**, never
