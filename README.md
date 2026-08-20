@@ -1,10 +1,17 @@
 # Medical Imaging AI Copilot
 
-Portfolio/research prototype combining **2D chest X-ray classification**,
-**3D lung CT nodule analysis**, **Grad-CAM explainability**, and a
-provider-agnostic **LLM Copilot** layer that explains grounded
-vision-model findings in plain language — plus a full React frontend
-(dashboard, analytics, report history, PDF generation) around all of it.
+![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?logo=pytorch&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+An end-to-end **AI Copilot for medical imaging**: two real, trained
+computer-vision models (2D chest X-ray classification, 3D lung CT nodule
+screening) paired with a provider-agnostic **LLM layer** that explains
+the vision models' own grounded findings in plain language — plus a full
+React frontend (dashboard, analytics, report history, PDF generation)
+around all of it.
 
 > **This is not a diagnostic device.** All output is AI-generated and
 > requires review by a qualified healthcare professional. Every patient
@@ -13,12 +20,42 @@ vision-model findings in plain language — plus a full React frontend
 > [`docs/MODEL_CARD.md`](./docs/MODEL_CARD.md) for real, measured model
 > metrics and known limitations (nothing here is fabricated).
 
-**Docs:** [`docs/MODEL_CARD.md`](./docs/MODEL_CARD.md) (real, measured
-model metrics and known limitations for both models).
+## Table of contents
 
----
+- [Project aim](#project-aim)
+- [The golden rule](#the-golden-rule)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech stack](#tech-stack)
+- [Results — what this project actually achieved](#results--what-this-project-actually-achieved)
+- [Project structure](#project-structure)
+- [Getting started](#getting-started)
+- [Training the models](#training-the-models)
+- [Tests](#tests)
+- [API overview](#api-overview)
+- [Known limitations](#known-limitations)
+- [License](#license)
 
-## Golden rule
+## Project aim
+
+Most "AI + medical imaging" demos do one of two things badly: either the
+vision model quietly becomes the whole product (a black-box probability
+with no explanation), or an LLM is pointed at a raw image and allowed to
+free-associate a diagnosis it was never trained or validated to make.
+This project's actual goal was to build the **correct architecture**
+instead — vision models that produce structured, grounded findings, and
+an LLM layer that is only ever allowed to explain those findings, never
+invent new ones — and to prove every claim about it with a real,
+measured number rather than an assumed one.
+
+Concretely, that meant building and actually running: two trained
+PyTorch vision models on real public medical datasets, a Grad-CAM
+explainability layer, a provider-agnostic LLM gateway (Groq / Ollama /
+Claude) with its own groundedness and safety validation pipeline, a
+FastAPI backend, and a full React frontend around the whole workflow —
+upload, analyze, explain, generate a PDF report, review history.
+
+## The golden rule
 
 ```
 Vision Model = analyzes the image, produces structured findings
@@ -44,8 +81,8 @@ See `src/safety/`.
   the model needs) and a marked-location preview image.
 - **Medical Copilot** — a provider-agnostic LLM layer (Groq / Ollama /
   Claude, switchable via config) that explains the vision model's
-  findings, answers grounded follow-up questions, and cross-provider
-  falls back if the primary provider fails.
+  findings, answers grounded follow-up questions, and falls back to a
+  second provider if the primary one fails.
 - **Safety pipeline** — groundedness validation + output-safety checks
   on every LLM response, input validation + prompt-injection heuristics
   on every question, deterministic keyword-lookup knowledge base (not a
@@ -87,6 +124,48 @@ FastAPI backend
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS, React Router |
 | Testing | pytest (backend), `tsc`/`oxlint` (frontend) |
 | Infra | Docker, Docker Compose, GitHub Actions |
+
+## Results — what this project actually achieved
+
+Every number below is measured from a real run, not estimated or
+assumed — full detail (confusion matrices, exact splits, hardware) in
+[`docs/MODEL_CARD.md`](./docs/MODEL_CARD.md).
+
+**2D chest X-ray classifier (ResNet50):** ROC-AUC **0.9919**, sensitivity
+**0.9883**, measured on a 915-image, patient-disjoint held-out test set
+(the official Kaggle split is *not* patient-disjoint — this project
+re-splits by patient ID from scratch to get a trustworthy number).
+
+**Copilot safety pipeline:** 8/8 required failure-case scenarios pass —
+including a prompt-injection case where the safety layer correctly
+rejects unsafe output even when the LLM itself complies with the
+injection (`evaluation/copilot_eval.py`).
+
+**Full-stack delivery:** real FastAPI + React app with 11 endpoints,
+report history/dashboard/analytics, PDF generation, Docker + CI —
+not just a training notebook.
+
+### 3D lung CT nodule model — an honest result, by design
+
+The 3D CNN (trained from scratch on LUNA16 `subset0`, 89 of the
+dataset's ~880 total scans) reaches ROC-AUC **0.7771** and sensitivity
+**0.6667**, but precision at the default 0.5 threshold is very low
+(**0.3%**, ~154 false positives per scan) — a direct consequence of the
+test split's extreme class imbalance (only 9 real nodules in 9,190
+candidates).
+
+Three real ways to improve this were deliberately considered and **not
+pursued**: threshold tuning off the PR curve, swapping in a pretrained
+3D backbone (e.g. `torchvision`'s `r3d_18`), and training on more LUNA16
+subsets with a false-positive-reduction cascade (the standard approach
+real LUNA16 solutions use). All three are legitimate next steps, but
+none of them changes the underlying constraint — a single-subset,
+9-positive test set — and chasing a better-looking number off it would
+have produced a *less* trustworthy result, not a more capable model.
+**The model ships as-is, with this limitation documented rather than
+tuned away.** For a portfolio piece, an honestly-measured 0.3% is a more
+defensible artifact than a polished number that can't be traced back to
+real data.
 
 ## Project structure
 
@@ -257,30 +336,13 @@ All endpoints under `/api/v1` (full interactive docs at `/docs`):
 | GET | `/reports/{id}/pdf` | download the PDF |
 | DELETE | `/reports/{id}` | permanently delete a report + its PDF |
 
-## Real evaluation results
-
-Measured, not fabricated — full detail in `docs/MODEL_CARD.md`:
-
-- **2D (ResNet50, chest X-ray):** ROC-AUC 0.9919, sensitivity 0.9883, on
-  a 915-image patient-disjoint held-out test set.
-- **3D (from-scratch CNN, LUNA16 `subset0`):** ROC-AUC 0.7771,
-  sensitivity 0.6667, on a 9,190-candidate held-out test set — an
-  honest early result with documented limitations (untuned threshold,
-  single LUNA16 subset, very low precision from severe class
-  imbalance), not a polished number.
-- **Copilot safety evaluation:** 8/8 required failure-case scenarios
-  pass, including a prompt-injection case where the safety layer
-  correctly rejects unsafe output even when the LLM itself complies
-  with the injection (`evaluation/copilot_eval.py`).
-
-See `docs/MODEL_CARD.md` for the full, honest limitations list for both
-models (including a real observed Grad-CAM shortcut-learning case).
-
 ## Known limitations
 
 - Not clinically validated — a portfolio/research prototype only.
-- 3D model trained on one LUNA16 subset (89 of ~880 total scans); high
-  false-positive rate at the default threshold (see model card).
+- 3D model precision is very low at the default threshold — a real,
+  measured, and deliberately-not-tuned-away result; see
+  [Results](#results--what-this-project-actually-achieved) above and
+  `docs/MODEL_CARD.md` for the full detail.
 - No lung-field cropping in the 2D preprocessing pipeline — Grad-CAM has
   been observed keying on non-anatomical cues (burned-in markers,
   shoulder soft tissue) in at least one case; see `docs/MODEL_CARD.md`.
@@ -289,6 +351,8 @@ models (including a real observed Grad-CAM shortcut-learning case).
 - Docker build is reviewed but not verified end-to-end in every local
   environment (a local TLS-interception issue blocked one dev
   environment specifically — expected to work in a clean CI runner).
+- Not yet deployed to a public URL — currently runs locally / via Docker
+  only.
 
 ## License
 
