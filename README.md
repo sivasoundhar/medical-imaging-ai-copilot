@@ -419,11 +419,9 @@ All endpoints under `/api/v1` (full interactive docs at `/docs`):
   shoulder soft tissue) in at least one case; see `docs/MODEL_CARD.md`.
 - No authentication/authorization — out of scope for this portfolio
   project (all patient/study data is synthetic demo data).
-- Docker build is reviewed but not verified end-to-end in every local
-  environment (a local TLS-interception issue blocked one dev
-  environment specifically — expected to work in a clean CI runner).
-- Not yet deployed to a public URL — currently runs locally / via Docker
-  only.
+- Not yet deployed to a public URL — currently runs locally, or via
+  Docker (`docker compose up --build`) for anyone who wants a
+  containerized setup.
 
 ## License
 
