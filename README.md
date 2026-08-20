@@ -20,6 +20,14 @@ around all of it.
 > [`docs/MODEL_CARD.md`](./docs/MODEL_CARD.md) for real, measured model
 > metrics and known limitations (nothing here is fabricated).
 
+![Demo: upload a chest X-ray, get a real ResNet50 prediction with Grad-CAM, ask the grounded AI Copilot a question, and generate a PDF report](./docs/demo.gif)
+
+*Real walkthrough, not staged data: a chest X-ray uploaded and classified live
+(PNEUMONIA, 99.98% confidence), Grad-CAM overlay, a grounded Copilot answer
+from a local Ollama model, a generated PDF report, and an existing multi-candidate
+3D CT report. Two full sample reports (2D and 3D) are in
+[`docs/sample_reports/`](./docs/sample_reports/).*
+
 ## Table of contents
 
 - [Project aim](#project-aim)
@@ -172,7 +180,10 @@ injection (`evaluation/copilot_eval.py`).
 
 **Full-stack delivery:** real FastAPI + React app with 11 endpoints,
 report history/dashboard/analytics, PDF generation, Docker + CI —
-not just a training notebook.
+not just a training notebook. See the demo GIF above, or the two real
+generated sample reports directly:
+[2D X-ray report](./docs/sample_reports/sample_report_2d_xray.pdf) ·
+[3D CT report](./docs/sample_reports/sample_report_3d_ct.pdf).
 
 ### 3D lung CT nodule model — an honest result, by design
 
