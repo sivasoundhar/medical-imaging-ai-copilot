@@ -24,8 +24,9 @@ around all of it.
 
 *Real walkthrough, not staged data: a chest X-ray uploaded and classified live
 (PNEUMONIA, 99.98% confidence), Grad-CAM overlay, a grounded Copilot answer
-from a local Ollama model, a generated PDF report, and an existing multi-candidate
-3D CT report. Two full sample reports (2D and 3D) are in
+and preliminary report from Groq (`openai/gpt-oss-120b`, with local Ollama
+configured as fallback), and an existing multi-candidate 3D CT report (6
+nodule locations). Two full sample reports (2D and 3D) are in
 [`docs/sample_reports/`](./docs/sample_reports/).*
 
 ## Table of contents
